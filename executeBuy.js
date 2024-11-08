@@ -8,6 +8,7 @@ import { wallet } from "./wallet.js";
 import { UNISWAP_V3_POOL_ABI } from "./uniswap-v3-abi.js";
 import { Contract } from "ethers";
 import { parseUnits } from "ethers";
+import { Interface } from "ethers";
 
 dotenv.config();
 
@@ -120,7 +121,14 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
     const block = await provider.getBlock(lastTransaction.blockNumber);
     const lastTransactionDate = new Date(block.timestamp * 1000).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 
-    logWithTimestamp(`Lastx   ${lastTransactionDate}`, chalk.black, false);
+    if (marketType === 0n) {
+      // Decode the transaction data to get the function name
+      const iface = new Interface(contract.interface.fragments);
+      const parsedTransaction = iface.parseTransaction({ data: lastTransaction.data });
+      console.log(formatUnits(parsedTransaction.args[0], 18));
+      const functionName = parsedTransaction.name;
+      logWithTimestamp(`Lastx   [${functionName.toUpperCase()}] ${lastTransactionDate}`, chalk.black, false);
+    }
 
     const totalSpentWei = totalSpentMap[contractAddress] || toBigInt(0);
     let spentNumOfZeros = getEthZeros(formatEther(totalSpentWei));

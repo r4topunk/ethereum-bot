@@ -1,5 +1,10 @@
 import { Contract, formatEther, id } from "ethers";
-import { BUY_VALUE, CONTRACT_ADDRESS, MIN_ETH_VALUE, SHOULD_BUY } from "./constants.js";
+import {
+  BUY_VALUE,
+  CONTRACT_ADDRESS,
+  MIN_ETH_VALUE,
+  SHOULD_BUY,
+} from "./constants.js";
 import { jsonAbi } from "./erc20-abi.js";
 import { executeBuy } from "./executeBuy.js";
 import { provider } from "./provider.js";
@@ -22,10 +27,12 @@ provider.on("block", async (blockNumber) => {
       const txAmount = tx.value;
       const formattedAmount = formatEther(txAmount);
 
-      let logMessage = `[${blockNumber}] [${Number(formattedAmount).toFixed(8)} ETH] [${tx.hash}]`;
+      let logMessage = `[${blockNumber}] [${Number(formattedAmount).toFixed(
+        8
+      )} ETH] [${tx.hash}]`;
 
       if (txAmount < MIN_ETH_VALUE) {
-        logWithTimestamp(logMessage, chalk.red);
+        if (txAmount !== 0n) logWithTimestamp(logMessage, chalk.red);
         continue;
       }
 
