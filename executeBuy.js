@@ -55,13 +55,15 @@ export async function executeSell(contract, tokensToSell) {
 
 export async function getTokenWorthInEth(contract) {
   try {
+    const tokenName = await contract.name();
     const balance = await contract.balanceOf(wallet.address);
-    logWithTimestamp(`Balance of tokens: ${formatUnits(balance, 18)}`, chalk.blue);
+    logWithTimestamp(`Balance of ${tokenName}: ${formatUnits(balance, 18)}`, chalk.blue);
 
     if (balance > 0) {
       const ethWorthInWei = await contract.getTokenSellQuote(balance);
       const ethWorth = formatEther(ethWorthInWei);
-      logWithTimestamp(`Worth of all tokens in ETH: ${ethWorth}`, chalk.green);
+      logWithTimestamp(`Worth of all ${tokenName} in ETH: ${ethWorth}`, chalk.green);
+      console.log()
       return ethWorth;
     } else {
       logWithTimestamp(`No tokens to calculate worth`, chalk.yellow);
