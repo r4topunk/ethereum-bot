@@ -1,5 +1,5 @@
 import { Contract, formatEther, id } from "ethers";
-import { BUY_VALUE, CONTRACT_ADDRESS, MIN_ETH_VALUE } from "./constants.js";
+import { BUY_VALUE, CONTRACT_ADDRESS, MIN_ETH_VALUE, SHOULD_BUY } from "./constants.js";
 import { jsonAbi } from "./erc20-abi.js";
 import { executeBuy } from "./executeBuy.js";
 import { provider } from "./provider.js";
@@ -45,17 +45,27 @@ provider.on("block", async (blockNumber) => {
         );
         const tokenAddress = transferEvent.address;
         logWithTimestamp(
-          `[${blockNumber}] Buy the token ${tokenAddress}`,
+          `[${blockNumber}] Token address ${tokenAddress}`,
           chalk.green
         );
-        const tokenContract = new Contract(tokenAddress, jsonAbi, wallet);
-        try {
-          await executeBuy(tokenContract, BUY_VALUE);
-        } catch (error) {
-          logWithTimestamp(
-            `[${blockNumber}] Error executing buy: ${error}`,
-            chalk.red
-          );
+        logWithTimestamp(
+          `[${blockNumber}] https://basescan.org/address/${tokenAddress}`,
+          chalk.green
+        );
+        logWithTimestamp(
+          `[${blockNumber}] https://wow.xyz/${tokenAddress}`,
+          chalk.green
+        );
+        if (SHOULD_BUY) {
+          const tokenContract = new Contract(tokenAddress, jsonAbi, wallet);
+          try {
+            await executeBuy(tokenContract, BUY_VALUE);
+          } catch (error) {
+            logWithTimestamp(
+              `[${blockNumber}] Error executing buy: ${error}`,
+              chalk.red
+            );
+          }
         }
       }
     }
