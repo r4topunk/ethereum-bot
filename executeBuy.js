@@ -31,15 +31,16 @@ export async function executeBuy(contract, valueToBuy) {
       `Transaction confirmed in block: ${receipt.blockNumber}`,
       chalk.green
     );
-    logWithTimestamp(`Gas used: ${receipt.gasUsed.toString()}`, chalk.green);
+    logWithTimestamp(`Gas paid: ${receipt.gasUsed * receipt.gasPrice}`, chalk.green);
   } catch (error) {
     logWithTimestamp(`Error sending transaction: ${error}`, chalk.red);
   }
 }
 
 export async function executeSell(contract, tokensToSell) {
+  console.log({tokensToSell});
   try {
-    const txResponse = await contract.sell(
+    const txResponse = await contract.sell.estimateGas(
       tokensToSell,
       wallet.address, // recipient
       wallet.address, // orderReferrer
@@ -48,6 +49,7 @@ export async function executeSell(contract, tokensToSell) {
       tokensToSell, // minPayoutSize
       0 // sqrtPriceLimitX96
     );
+    console.log({txResponse});
     logWithTimestamp(`Transaction sent: ${txResponse.hash}`, chalk.green);
 
     const receipt = await txResponse.wait();
@@ -55,7 +57,7 @@ export async function executeSell(contract, tokensToSell) {
       `Transaction confirmed in block: ${receipt.blockNumber}`,
       chalk.green
     );
-    logWithTimestamp(`Gas used: ${receipt.gasUsed.toString()}`, chalk.green);
+    logWithTimestamp(`Gas paid: ${receipt.gasUsed * receipt.gasPrice}`, chalk.green);
   } catch (error) {
     logWithTimestamp(`Error sending transaction: ${error}`, chalk.red);
   }

@@ -14,3 +14,7 @@ export function getEthZeros(ethWorth) {
   let numOfZeros = ethWorthStr.match(/(?<=\.)0+/)[0].length;
   return ethWorth < 0 ? numOfZeros : numOfZeros + 1;
 }
+
+export function lineBreak() {
+  console.log();
+}
