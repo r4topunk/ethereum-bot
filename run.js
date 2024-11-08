@@ -1,5 +1,5 @@
 import { ethers, parseEther } from 'ethers';
-import { executeBuy, getBalanceAndSellAll, getTokenWorthInEth } from './executeBuy.js';
+import { executeBuy, getBalanceAndSellAll, getTokenWorthInEth, getTotalSpent, getTotalSpentForContracts } from './executeBuy.js';
 import dotenv from 'dotenv';
 import { jsonAbi } from './erc20-abi.js';
 import { wallet } from './wallet.js';
@@ -25,9 +25,13 @@ const contracts = [
 (async () => {
   // await getBalanceAndSellAll(contract);
   // await executeBuy(contract, parseEther('0.002'));
+  
+  const totalSpent = await getTotalSpentForContracts(contracts);
   for (const contractAddress of contracts) {
-    const contract = new ethers.Contract(contractAddress, jsonAbi, wallet);
     console.log()
-    await getTokenWorthInEth(contract);
+    const contract = new ethers.Contract(contractAddress, jsonAbi, wallet);
+    await getTokenWorthInEth(contract, totalSpent);
+    // await getTotalSpent(contractAddress);
   }
+
 })();

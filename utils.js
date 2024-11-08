@@ -8,3 +8,9 @@ export function logWithTimestamp(message, color = chalk.white, logDate = true) {
   // appendFileSync(LOG_FILE_PATH, logMessage + '\n');
   console.log(color(logMessage));
 }
+
+export function getEthZeros(ethWorth) {
+  const ethWorthStr = ethWorth.toString();
+  let numOfZeros = ethWorthStr.match(/(?<=\.)0+/)[0].length;
+  return ethWorth < 0 ? numOfZeros : numOfZeros + 1;
+}
