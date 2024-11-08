@@ -6,8 +6,7 @@ import { provider } from "./provider.js";
 import { logWithTimestamp } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
-
-logWithTimestamp(`Listening for transactions to contract: https://basescan.org/address/${CONTRACT_ADDRESS}`, chalk.cyan);
+import terminalLink from "terminal-link";
 
 provider.on("block", async (blockNumber) => {
   // logWithTimestamp(`[${blockNumber}] New block detected`, chalk.cyan);
@@ -15,60 +14,38 @@ provider.on("block", async (blockNumber) => {
 
   for (const tx of block.prefetchedTransactions) {
     if (tx.to === CONTRACT_ADDRESS) {
-      logWithTimestamp(
-        `[${blockNumber}] Transaction to contract detected: https://basescan.org/tx/${tx.hash}`,
-        chalk.yellow
+      const baseLink = terminalLink(
+        "New transaction detected",
+        `https://basescan.org/tx/${tx.hash}`
       );
 
       const txAmount = tx.value;
       const formattedAmount = formatEther(txAmount);
 
+      let logMessage = `[${new Date().toLocaleString()}] [${blockNumber}] [${Number(formattedAmount).toFixed(8)} ETH] [${tx.hash}]`;
+
       if (txAmount < MIN_ETH_VALUE) {
-        logWithTimestamp(
-          `[${blockNumber}] Transaction amount: ${formattedAmount} ETH`,
-          chalk.red
-        );
+        logWithTimestamp(logMessage, chalk.red);
         continue;
       }
-
-      logWithTimestamp(
-        `[${blockNumber}] Transaction amount: ${formattedAmount} ETH`,
-        chalk.green
-      );
 
       const receipt = await provider.getTransactionReceipt(tx.hash);
       const transferEvent = receipt.logs.find(
         (log) => log.topics[0] === id("Transfer(address,address,uint256)")
       );
       if (transferEvent) {
-        logWithTimestamp(
-          `[${blockNumber}] Transaction has a transfer action: ${tx.hash}`,
-          chalk.yellow
-        );
+        logWithTimestamp(logMessage, chalk.green);
         const tokenAddress = transferEvent.address;
-        logWithTimestamp(
-          `[${blockNumber}] Token address ${tokenAddress}`,
-          chalk.green
-        );
-        logWithTimestamp(
-          `[${blockNumber}] https://basescan.org/address/${tokenAddress}`,
-          chalk.green
-        );
-        logWithTimestamp(
-          `[${blockNumber}] https://wow.xyz/${tokenAddress}`,
-          chalk.green
-        );
         if (SHOULD_BUY) {
           const tokenContract = new Contract(tokenAddress, jsonAbi, wallet);
           try {
             await executeBuy(tokenContract, BUY_VALUE);
           } catch (error) {
-            logWithTimestamp(
-              `[${blockNumber}] Error executing buy: ${error}`,
-              chalk.red
-            );
+            logWithTimestamp(`Error executing buy: ${error}\n`, chalk.yellow);
           }
         }
+      } else {
+        logWithTimestamp(logMessage, chalk.green);
       }
     }
   }
