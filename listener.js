@@ -7,6 +7,8 @@ import { logWithTimestamp } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
 
+logWithTimestamp(`Listening for transactions to contract: https://basescan.org/address/${CONTRACT_ADDRESS}`, chalk.cyan);
+
 provider.on("block", async (blockNumber) => {
   // logWithTimestamp(`[${blockNumber}] New block detected`, chalk.cyan);
   const block = await provider.getBlock(blockNumber, true);
@@ -14,7 +16,7 @@ provider.on("block", async (blockNumber) => {
   for (const tx of block.prefetchedTransactions) {
     if (tx.to === CONTRACT_ADDRESS) {
       logWithTimestamp(
-        `[${blockNumber}] Transaction to contract detected: ${tx.hash}`,
+        `[${blockNumber}] Transaction to contract detected: https://basescan.org/tx/${tx.hash}`,
         chalk.yellow
       );
 
