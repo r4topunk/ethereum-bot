@@ -17,15 +17,13 @@ import chalk from "chalk";
 import { formatEther } from "ethers";
 
 const argv = yargs(process.argv)
-  .option("operation", {
-    alias: "o",
-    description: "The operation to perform",
-    type: "string",
-    demandOption: false,
+  .positional("operation", {
+    describe: "The operation to perform",
+    choices: ["buy", "sell", "sell-all", "info"],
+    default: "info"
   })
-  .option("contractAddress", {
-    alias: "c",
-    description: "The contract address",
+  .positional("contractAddress", {
+    describe: "The contract address",
     type: "string",
     demandOption: false,
   })
@@ -78,7 +76,7 @@ const operation = argv?.operation;
         return;
       }
       await getBalanceAndSellAll(contract);
-    } else {
+    } else if (operation === "info") {
       lineBreak();
       await getTokenWorthInEth(contract, totalSpent);
     }
