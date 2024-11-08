@@ -22,7 +22,7 @@ provider.on("block", async (blockNumber) => {
       const txAmount = tx.value;
       const formattedAmount = formatEther(txAmount);
 
-      let logMessage = `[${new Date().toLocaleString()}] [${blockNumber}] [${Number(formattedAmount).toFixed(8)} ETH] [${tx.hash}]`;
+      let logMessage = `[${blockNumber}] [${Number(formattedAmount).toFixed(8)} ETH] [${tx.hash}]`;
 
       if (txAmount < MIN_ETH_VALUE) {
         logWithTimestamp(logMessage, chalk.red);
