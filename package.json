@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon -q ./listener.js",
+    "start": "nodemon ./listener.js",
     "buy": "node ./executeBuy.js",
     "op" : "node ./run.js"
   },

@@ -1,21 +1,14 @@
-import { ethers, parseEther } from "ethers";
-import {
-  executeBuy,
-  executeSell,
-  getBalanceAndSellAll,
-  getTokenPriceUniswap,
-  getTokenWorthInEth,
-  getTotalSpent,
-  getTotalSpentForContracts,
-} from "./executeBuy.js";
+import chalk from "chalk";
 import dotenv from "dotenv";
-import { jsonAbi } from "./erc20-abi.js";
-import { wallet } from "./wallet.js";
+import { ethers } from "ethers";
 import yargs from "yargs";
 import { BUY_VALUE } from "./constants.js";
+import { jsonAbi } from "./erc20-abi.js";
 import { lineBreak, logWithTimestamp } from "./utils.js";
-import chalk from "chalk";
-import { formatEther } from "ethers";
+import { wallet } from "./wallet.js";
+import { getTotalSpentForContracts } from "./spending.js";
+import { executeBuy, executeSell, getBalanceAndSellAll } from "./trading.js";
+import { getTokenWorthInEth } from "./tokenInfo.js";
 
 const argv = yargs(process.argv)
   .positional("operation", {

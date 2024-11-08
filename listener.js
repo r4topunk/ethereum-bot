@@ -6,12 +6,13 @@ import {
   SHOULD_BUY,
 } from "./constants.js";
 import { jsonAbi } from "./erc20-abi.js";
-import { executeBuy } from "./executeBuy.js";
+// import { executeBuy } from "./executeBuy.js";
 import { provider } from "./provider.js";
 import { logWithTimestamp } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
 import terminalLink from "terminal-link";
+import { executeBuy } from "./trading.js";
 
 provider.on("block", async (blockNumber) => {
   // logWithTimestamp(`[${blockNumber}] New block detected`, chalk.cyan);
