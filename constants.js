@@ -9,6 +9,7 @@ export const BUY_VALUE = parseEther('0.00012');
 export const MIN_ETH_VALUE = parseEther('0.5');
 
 
+export const FILE_LOG_ON = true;
 export const LOG_FILE_PATH = "log.txt";
 
 
