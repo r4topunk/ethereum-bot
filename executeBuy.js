@@ -1,10 +1,10 @@
+import chalk from "chalk";
 import dotenv from "dotenv";
+import { formatEther, formatUnits, id, toBigInt, zeroPadValue } from "ethers";
+import terminalLink from "terminal-link";
+import { provider } from "./provider.js";
 import { getEthZeros, logWithTimestamp } from "./utils.js";
 import { wallet } from "./wallet.js";
-import chalk from "chalk";
-import { formatEther, formatUnits, id, toBigInt, zeroPadValue } from "ethers";
-import { provider } from "./provider.js";
-import terminalLink from "terminal-link";
 
 dotenv.config();
 
@@ -92,12 +92,31 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
     logWithTimestamp(`Address ${contractAddress}`, chalk.black, false);
 
     const balance = await contract.balanceOf(wallet.address);
-    logWithTimestamp(`Balance ${formatUnits(balance, 18)}`, chalk.black, false);
+    logWithTimestamp(`Balance ${Number(formatUnits(balance, 18)).toFixed("8")}`, chalk.black, false);
+
+    const filter = {
+      fromBlock: 22119142,
+      toBlock: "latest",
+      address: contractAddress,
+      topics: [
+        id("Transfer(address,address,uint256)"),
+        null,
+        null,
+      ],
+    };
+
+    const logs = await provider.getLogs(filter);
+    const lastTransactionLog = logs[logs.length - 1];
+    const lastTransaction = await provider.getTransaction(lastTransactionLog.transactionHash);
+    const block = await provider.getBlock(lastTransaction.blockNumber);
+    const lastTransactionDate = new Date(block.timestamp * 1000).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+
+    logWithTimestamp(`Lastx   ${lastTransactionDate}`, chalk.black, false);
 
     const totalSpentWei = totalSpentMap[contractAddress] || toBigInt(0);
     let spentNumOfZeros = getEthZeros(formatEther(totalSpentWei));
     logWithTimestamp(
-      `Spent   [0x${spentNumOfZeros}]${formatEther(totalSpentWei)}`,
+      `Spent   [0x${spentNumOfZeros}] ${Number(formatEther(totalSpentWei)).toFixed(8)} ETH`,
       chalk.black,
       false
     );
@@ -107,7 +126,7 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
       const ethWorth = formatEther(ethWorthInWei);
       let numOfZeros = getEthZeros(ethWorth);
       logWithTimestamp(
-        `Worth   [0x${numOfZeros}]${ethWorth}`,
+        `Worth   [0x${numOfZeros}] ${Number(ethWorth).toFixed(8)} ETH`,
         chalk.black,
         false
       );
