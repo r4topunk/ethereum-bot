@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./listener.js"
+    "start": "nodemon ./listener.js",
+    "buy": "node ./executeBuy.js"
   },
   "keywords": [],
   "author": "",

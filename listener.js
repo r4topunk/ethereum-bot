@@ -2,6 +2,7 @@ import { AlchemyProvider, Wallet, ethers, formatEther, id, parseEther, Contract 
 import chalk from 'chalk';
 import dotenv from 'dotenv';
 import { jsonAbi } from "./erc20-abi.js";
+import { executeBuy } from "./executeBuy.js"; // Import the executeBuy function
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const wallet = new Wallet(privateKey, provider);
 const contract = new Contract(contractAddress, jsonAbi, wallet);
 
 const MIN_ETH_VALUE = parseEther('0.1');
+const BUY_VALUE = parseEther('0.000333');
 
 provider.on('block', async (blockNumber) => {
   // console.log(chalk.cyan(`[${blockNumber}] New block detected`));
@@ -24,64 +26,31 @@ provider.on('block', async (blockNumber) => {
     if (tx.to === contractAddress) {
       console.log(chalk.yellow(`[${blockNumber}] Transaction to contract detected: ${tx.hash}`));
 
-      const receipt = await provider.getTransactionReceipt(tx.hash);
-      const transferEvent = receipt.logs.find(log => log.topics[0] === id("Transfer(address,address,uint256)"));
-      if (transferEvent) {
-        console.log(chalk.yellow(`[${blockNumber}] Transaction has a transfer action: ${tx.hash}`));
-        console.log(chalk.yellow(`[${blockNumber}] Transfer event: ${JSON.stringify(transferEvent)}`));
-      }
+      
 
       const txAmount = tx.value;
       const formattedAmount = formatEther(txAmount);
-      console.log(chalk.magenta(`[${blockNumber}] Transaction amount: ${formattedAmount} ETH`));
-
+      
       if (txAmount === 0) {
-        console.log(chalk.red(`[${blockNumber}] Transaction amount is 0.0 ETH, skipping transaction.`));
+        console.log(chalk.red(`[${blockNumber}] Transaction amount: ${formattedAmount} ETH`));
         continue;
       }
-
+      
       if (txAmount > MIN_ETH_VALUE) {
-        console.log(chalk.green(`[${blockNumber}] Transaction amount is greater than 0.01 ETH, proceeding with transaction.`));
+        console.log(chalk.green(`[${blockNumber}] Transaction amount: ${formattedAmount} ETH`));
+        
+        const receipt = await provider.getTransactionReceipt(tx.hash);
+        const transferEvent = receipt.logs.find(log => log.topics[0] === id("Transfer(address,address,uint256)"));
         if (transferEvent) {
-          console.log(chalk.green(`[${blockNumber}] Buy the token ${transferEvent.address}`));
-        }
-
-        if (typeof contract.buy === 'function') {
+          console.log(chalk.yellow(`[${blockNumber}] Transaction has a transfer action: ${tx.hash}`));
+          const tokenAddress = transferEvent.address;
+          console.log(chalk.green(`[${blockNumber}] Buy the token ${tokenAddress}`));
+          const tokenContract = new Contract(tokenAddress, jsonAbi, wallet);
           try {
-            const txParams = {
-              value: parseEther('0.00001')
-            };
-            const gasEstimate = await contract.estimateGas.buy(
-              wallet.address, // recipient
-              wallet.address, // refundRecipient
-              wallet.address, // orderReferrer
-              "", // comment
-              0, // expectedMarketType
-              parseEther('0.00001'), // minOrderSize
-               0 // sqrtPriceLimitX96
-            );
-            txParams.gasLimit = gasEstimate;
-
-            const txResponse = await contract.buy(
-              wallet.address, // recipient
-              wallet.address, // refundRecipient
-              wallet.address, // orderReferrer
-              "", // comment
-              0, // expectedMarketType
-              parseEther('0.00001'), // minOrderSize
-              0, // sqrtPriceLimitX96
-              txParams
-            );
-            console.log(`[${blockNumber}] Transaction sent: ${txResponse.hash}`);
-
-            const receipt = await txResponse.wait();
-            console.log(`[${blockNumber}] Transaction confirmed in block: ${receipt.blockNumber}`);
-            console.log(`[${blockNumber}] Bought tokens: ${receipt}`);
+            await executeBuy(tokenContract, BUY_VALUE); // Pass the token contract and valueToBuy as parameters
           } catch (error) {
-            console.error(`[${blockNumber}] Error sending transaction: ${error}`);
+            console.error(`[${blockNumber}] Error executing buy: ${error}`);
           }
-        } else {
-          console.error(`[${blockNumber}] Error: 'buy' method not found on contract`);
         }
       } else {
         console.log(chalk.red(`[${blockNumber}] Transaction amount is less than 0.01 ETH, skipping transaction.`));
