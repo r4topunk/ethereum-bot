@@ -8,7 +8,7 @@ import { wallet } from "./wallet.js";
 import chalk from "chalk";
 
 provider.on("block", async (blockNumber) => {
-  logWithTimestamp(`[${blockNumber}] New block detected`, chalk.cyan);
+  // logWithTimestamp(`[${blockNumber}] New block detected`, chalk.cyan);
   const block = await provider.getBlock(blockNumber, true);
 
   for (const tx of block.prefetchedTransactions) {
