@@ -19,6 +19,7 @@
     "fs": "0.0.1-security"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.7",
+    "terminal-link": "^3.0.0"
   }
 }

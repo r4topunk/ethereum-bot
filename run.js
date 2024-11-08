@@ -27,6 +27,7 @@ const contracts = [
   // await executeBuy(contract, parseEther('0.002'));
   for (const contractAddress of contracts) {
     const contract = new ethers.Contract(contractAddress, jsonAbi, wallet);
+    console.log()
     await getTokenWorthInEth(contract);
   }
 })();

@@ -2,7 +2,9 @@ import dotenv from 'dotenv';
 import { logWithTimestamp } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from 'chalk';
-import { formatEther, formatUnits, toBigInt } from 'ethers';
+import { formatEther, formatUnits, id, toBigInt, zeroPadValue } from 'ethers';
+import { provider } from './provider.js';
+import terminalLink from 'terminal-link';
 
 dotenv.config();
 
@@ -56,21 +58,69 @@ export async function executeSell(contract, tokensToSell) {
 export async function getTokenWorthInEth(contract) {
   try {
     const tokenName = await contract.name();
+    const contractAddress = await contract.getAddress();
+    
+    const link = terminalLink(tokenName, `https://basescan.org/address/${contractAddress}`);
+
+    logWithTimestamp(link, chalk.blue, false);
+
+    logWithTimestamp(`Address: ${contractAddress}`, chalk.blue, false);
+
     const balance = await contract.balanceOf(wallet.address);
-    logWithTimestamp(`Balance of ${tokenName}: ${formatUnits(balance, 18)}`, chalk.blue);
+    logWithTimestamp(`Balance: ${formatUnits(balance, 18)}`, chalk.blue, false);
+    
+    // const totalSpent = await getTotalSpent(contract);
+    // logWithTimestamp(`Total spent: ${totalSpent} ETH`, chalk.blue, false);
 
     if (balance > 0) {
       const ethWorthInWei = await contract.getTokenSellQuote(balance);
       const ethWorth = formatEther(ethWorthInWei);
-      logWithTimestamp(`Worth of all ${tokenName} in ETH: ${ethWorth}`, chalk.green);
-      console.log()
+      const ethWorthStr = ethWorth.toString();
+
+      // Numbers of zero before the first number gt 0
+      // Ex: 0.000053561270257356 => 5
+      // Ex: 0.000000001068005394 => 9
+      let numOfZeros = ethWorthStr.match(/(?<=\.)0+/)[0].length;
+      numOfZeros += ethWorth > 0 ? 1 : 0;
+
+      logWithTimestamp(`Worth: [0x${numOfZeros}]${ethWorth}`, chalk.green, false);
       return ethWorth;
     } else {
-      logWithTimestamp(`No tokens to calculate worth`, chalk.yellow);
+      logWithTimestamp(`No tokens to calculate worth`, chalk.yellow, false);
       return 0;
     }
   } catch (error) {
-    logWithTimestamp(`Error calculating token worth: ${error}`, chalk.red);
+    logWithTimestamp(`Error calculating token worth: ${error}`, chalk.red, false);
+    return 0;
+  }
+}
+
+export async function getTotalSpent(contract) {
+  try {
+    const filter = {
+      fromBlock: 22128949,
+      toBlock: "latest",
+      // address: contract.address,
+      topics: [
+        id("Transfer(address,address,uint256)"),
+        null,
+        zeroPadValue(wallet.address, 32)
+      ]
+    };
+
+    const logs = await provider.getLogs(filter);
+    let totalSpent = toBigInt(0);
+
+    for (const log of logs) {
+      const tx = await provider.getTransaction(log.transactionHash);
+      // if (tx.to === contract.address) {
+        totalSpent += toBigInt(tx.value);
+      // }
+    }
+
+    return formatEther(totalSpent);
+  } catch (error) {
+    logWithTimestamp(`Error fetching total spent: ${error}`, chalk.red);
     return 0;
   }
 }
