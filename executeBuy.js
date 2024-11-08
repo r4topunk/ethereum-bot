@@ -72,7 +72,7 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
     );
     const wowLink = terminalLink(
       "Wow",
-      `https://wow.wtf/${contractAddress}`
+      `https://wow.xyz/${contractAddress}`
     );
     const dexScreen = terminalLink(
       "DexScreen",
@@ -117,7 +117,7 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
         false
       );
 
-      return ethWorth;
+      return {ethWorth, percentage, balance};
     } else {
       logWithTimestamp(`No tokens to calculate worth`, chalk.yellow, false);
       return 0;

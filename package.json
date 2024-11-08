@@ -16,7 +16,8 @@
     "chalk": "^5.3.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",
-    "fs": "0.0.1-security"
+    "fs": "0.0.1-security",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.7",
