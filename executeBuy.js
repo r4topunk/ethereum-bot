@@ -31,14 +31,17 @@ export async function executeBuy(contract, valueToBuy) {
       `Transaction confirmed in block: ${receipt.blockNumber}`,
       chalk.green
     );
-    logWithTimestamp(`Gas paid: ${receipt.gasUsed * receipt.gasPrice}`, chalk.green);
+    logWithTimestamp(
+      `Gas paid: ${receipt.gasUsed * receipt.gasPrice}`,
+      chalk.green
+    );
   } catch (error) {
     logWithTimestamp(`Error sending transaction: ${error}`, chalk.red);
   }
 }
 
 export async function executeSell(contract, tokensToSell) {
-  console.log({tokensToSell});
+  console.log({ tokensToSell });
   try {
     const txResponse = await contract.sell.estimateGas(
       tokensToSell,
@@ -49,7 +52,7 @@ export async function executeSell(contract, tokensToSell) {
       tokensToSell, // minPayoutSize
       0 // sqrtPriceLimitX96
     );
-    console.log({txResponse});
+    console.log({ txResponse });
     logWithTimestamp(`Transaction sent: ${txResponse.hash}`, chalk.green);
 
     const receipt = await txResponse.wait();
@@ -57,7 +60,10 @@ export async function executeSell(contract, tokensToSell) {
       `Transaction confirmed in block: ${receipt.blockNumber}`,
       chalk.green
     );
-    logWithTimestamp(`Gas paid: ${receipt.gasUsed * receipt.gasPrice}`, chalk.green);
+    logWithTimestamp(
+      `Gas paid: ${receipt.gasUsed * receipt.gasPrice}`,
+      chalk.green
+    );
   } catch (error) {
     logWithTimestamp(`Error sending transaction: ${error}`, chalk.red);
   }
@@ -72,16 +78,16 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
       "Base",
       `https://basescan.org/address/${contractAddress}`
     );
-    const wowLink = terminalLink(
-      "Wow",
-      `https://wow.xyz/${contractAddress}`
-    );
+    const wowLink = terminalLink("Wow", `https://wow.xyz/${contractAddress}`);
     const dexScreen = terminalLink(
       "DexScreen",
       `https://dexscreener.com/base/${contractAddress}`
     );
 
-    const links = `${tokenName} => ${baseLink} | ${wowLink} | ${dexScreen}`;
+    const links = terminalLink.isSupported
+      ? `${tokenName} => ${baseLink} | ${wowLink} | ${dexScreen}`
+      : `${tokenName}\n` + chalk.blue(`${baseLink}\n${wowLink}\n${dexScreen}`);
+
     logWithTimestamp(links, chalk.magenta, false);
     logWithTimestamp(`Address ${contractAddress}`, chalk.black, false);
 
@@ -119,7 +125,7 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
         false
       );
 
-      return {ethWorth, percentage, balance};
+      return { ethWorth, percentage, balance };
     } else {
       logWithTimestamp(`No tokens to calculate worth`, chalk.yellow, false);
       return 0;
@@ -150,11 +156,11 @@ export async function getTotalSpent(contractAddress) {
     let totalSpent = toBigInt(0);
 
     // Collect all transaction hashes
-    const transactionHashes = logs.map(log => log.transactionHash);
+    const transactionHashes = logs.map((log) => log.transactionHash);
 
     // Fetch all transactions in parallel
     const transactions = await Promise.all(
-      transactionHashes.map(hash => provider.getTransaction(hash))
+      transactionHashes.map((hash) => provider.getTransaction(hash))
     );
 
     for (const tx of transactions) {
@@ -182,23 +188,24 @@ export async function getTotalSpentForContracts(contractAddresses) {
       ],
     };
 
-    
     const logs = await provider.getLogs(filter);
-    
+
     // Initialize totalSpentMap with zero for each address
     const totalSpentMap = {};
     for (const address of contractAddresses) {
       totalSpentMap[address] = toBigInt(0);
     }
-    
+
     // Collect all unique transaction hashes
-    const transactionHashes = [...new Set(logs.map(log => log.transactionHash))];
-    
+    const transactionHashes = [
+      ...new Set(logs.map((log) => log.transactionHash)),
+    ];
+
     // Fetch all transactions in parallel
     const transactions = await Promise.all(
-      transactionHashes.map(hash => provider.getTransaction(hash))
+      transactionHashes.map((hash) => provider.getTransaction(hash))
     );
-    
+
     for (const tx of transactions) {
       if (contractAddresses.includes(tx.to)) {
         totalSpentMap[tx.to] += toBigInt(tx.value);
