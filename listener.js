@@ -14,8 +14,10 @@ const wallet = new Wallet(privateKey, provider);
 
 const contract = new Contract(contractAddress, jsonAbi, wallet);
 
+const MIN_ETH_VALUE = parseEther('0.1');
+
 provider.on('block', async (blockNumber) => {
-  console.log(chalk.cyan(`[${blockNumber}] New block detected`));
+  // console.log(chalk.cyan(`[${blockNumber}] New block detected`));
   const block = await provider.getBlock(blockNumber, true);
 
   for (const tx of block.prefetchedTransactions) {
@@ -38,7 +40,7 @@ provider.on('block', async (blockNumber) => {
         continue;
       }
 
-      if (txAmount > parseEther('0.01')) {
+      if (txAmount > MIN_ETH_VALUE) {
         console.log(chalk.green(`[${blockNumber}] Transaction amount is greater than 0.01 ETH, proceeding with transaction.`));
         if (transferEvent) {
           console.log(chalk.green(`[${blockNumber}] Buy the token ${transferEvent.address}`));
