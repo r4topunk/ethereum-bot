@@ -5,6 +5,9 @@ import terminalLink from "terminal-link";
 import { provider } from "./provider.js";
 import { getEthZeros, logWithTimestamp } from "./utils.js";
 import { wallet } from "./wallet.js";
+import { UNISWAP_V3_POOL_ABI } from "./uniswap-v3-abi.js";
+import { Contract } from "ethers";
+import { parseUnits } from "ethers";
 
 dotenv.config();
 
@@ -41,7 +44,6 @@ export async function executeBuy(contract, valueToBuy) {
 }
 
 export async function executeSell(contract, tokensToSell) {
-  console.log({ tokensToSell });
   try {
     const txResponse = await contract.sell.estimateGas(
       tokensToSell,
@@ -52,7 +54,6 @@ export async function executeSell(contract, tokensToSell) {
       tokensToSell, // minPayoutSize
       0 // sqrtPriceLimitX96
     );
-    console.log({ txResponse });
     logWithTimestamp(`Transaction sent: ${txResponse.hash}`, chalk.green);
 
     const receipt = await txResponse.wait();
@@ -94,6 +95,14 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
     const balance = await contract.balanceOf(wallet.address);
     logWithTimestamp(`Balance ${Number(formatUnits(balance, 18)).toFixed("8")}`, chalk.black, false);
 
+    // 0 = BONDING_CURVE, 1 = UNISWAP_POOL
+    const marketType = await contract.marketType();
+    logWithTimestamp(
+      `Type    ${marketType === 0n ? "BONDING_CURVE" : "UNISWAP_POOL"}`,
+      chalk.black,
+      false
+    );
+
     const filter = {
       fromBlock: 22119142,
       toBlock: "latest",
@@ -122,20 +131,26 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
     );
 
     if (balance > 0) {
-      const ethWorthInWei = await contract.getTokenSellQuote(balance);
+      const poolAddress = await contract.poolAddress();
+      let ethWorthInWei;
+
+      if (marketType === 0n) {
+        ethWorthInWei = await contract.getTokenSellQuote(balance);
+      } else {
+        const tokenPriceInWei = await getTokenPriceUniswap(poolAddress);
+        ethWorthInWei = tokenPriceInWei * balance / BigInt(10 ** 18);
+      }
+
       const ethWorth = formatEther(ethWorthInWei);
-      let numOfZeros = getEthZeros(ethWorth);
+      const balanceNumOfZeros = getEthZeros(ethWorth);
+
       logWithTimestamp(
-        `Worth   [0x${numOfZeros}] ${Number(ethWorth).toFixed(8)} ETH`,
+        `Worth   [0x${balanceNumOfZeros}] ${Number(ethWorth).toFixed(8)} ETH`,
         chalk.black,
         false
       );
 
       const differenceInWei = ethWorthInWei - totalSpentWei;
-      // const difference = formatEther(differenceInWei);
-      // let diffNumOfZeros = getEthZeros(ethWorth);
-      // logWithTimestamp(`Diff    [0x${diffNumOfZeros}]${difference}`, chalk.magenta, false);
-
       const percentageDifference = (differenceInWei * 100n) / totalSpentWei;
       const percentage = Number(percentageDifference);
       logWithTimestamp(
@@ -251,5 +266,32 @@ export async function getBalanceAndSellAll(contract) {
     }
   } catch (error) {
     logWithTimestamp(`Error fetching balance: ${error}`, chalk.red);
+  }
+}
+
+export async function getTokenPrice(contract) {
+  const ethWorthInWei = await contract.getTokenSellQuote(balance);
+  const ethWorth = formatEther(ethWorthInWei);
+  return ethWorth
+}
+
+export async function getTokenPriceUniswap(uniswapPoolAddress) {
+  const uniswapPoolContract = new Contract(
+    // "0xBd74Fbaf6E9d2B08EB938981EFF601BD61CFAE8E",
+    uniswapPoolAddress,
+    UNISWAP_V3_POOL_ABI,
+    provider
+  );
+
+  try {
+    // Fetch the sqrtPriceX96 from the pool
+    const slot0 = await uniswapPoolContract.slot0();
+    const sqrtPriceX96 = slot0.sqrtPriceX96;
+
+    // Calculate token price in ETH
+    const priceInWei = sqrtPriceX96 ** 2n / 2n ** 192n;
+    return priceInWei
+  } catch (error) {
+    console.error("Error fetching token price from Uniswap pool:", error);
   }
 }

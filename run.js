@@ -3,6 +3,7 @@ import {
   executeBuy,
   executeSell,
   getBalanceAndSellAll,
+  getTokenPriceUniswap,
   getTokenWorthInEth,
   getTotalSpent,
   getTotalSpentForContracts,
@@ -20,9 +21,10 @@ const argv = yargs(process.argv)
   .positional("operation", {
     describe: "The operation to perform",
     choices: ["buy", "sell", "sell-all", "info"],
-    default: "info"
+    default: "info",
   })
-  .positional("contractAddress", {
+  .option("contractAddress", {
+    alias: "c",
     describe: "The contract address",
     type: "string",
     demandOption: false,
@@ -48,11 +50,12 @@ const contracts = argv?.allContracts
       "0xB2e63BD6cBF78860976B8fA8e1C8f42F8368d568",
       "0xD5D5c9763547B7092e7A27FF821D6E0d8b6231D7",
       "0xA23D4A9De7650B7Df70F98aAe03807fae5dF618B",
-      "0x62d30681b6816aAf0281b8999591Ac4406DB4251"
+      "0x62d30681b6816aAf0281b8999591Ac4406DB4251",
     ]
   : argv?.contractAddress
   ? [argv?.contractAddress]
   : [];
+
 const operation = argv?.operation;
 
 (async () => {
@@ -64,23 +67,27 @@ const operation = argv?.operation;
   const totalSpent = await getTotalSpentForContracts(contracts);
   for (const contractAddress of contracts) {
     const contract = new ethers.Contract(contractAddress, jsonAbi, wallet);
-    
+
     if (operation === "buy") {
       await executeBuy(contract, BUY_VALUE);
     } else if (operation === "sell") {
       const { balance } = await getTokenWorthInEth(contract, totalSpent);
-      await executeSell(contract, balance);
+      await executeSell(contract, balance / 4);
     } else if (operation === "sell-all") {
       if (contracts.length > 1) {
-        logWithTimestamp("Cannot sell all tokens for multiple contracts", chalk.red);
+        logWithTimestamp(
+          "Cannot sell all tokens for multiple contracts",
+          chalk.red
+        );
         return;
       }
       await getBalanceAndSellAll(contract);
     } else if (operation === "info") {
       lineBreak();
       await getTokenWorthInEth(contract, totalSpent);
+      // await getTokenPriceUniswap(contractAddress);
     }
   }
-  
+
   lineBreak();
 })();
