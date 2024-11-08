@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { logWithTimestamp } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from 'chalk';
+import { formatEther, formatUnits, toBigInt } from 'ethers';
 
 dotenv.config();
 
@@ -49,6 +50,26 @@ export async function executeSell(contract, tokensToSell) {
     logWithTimestamp(`Gas used: ${receipt.gasUsed.toString()}`, chalk.green);
   } catch (error) {
     logWithTimestamp(`Error sending transaction: ${error}`, chalk.red);
+  }
+}
+
+export async function getTokenWorthInEth(contract) {
+  try {
+    const balance = await contract.balanceOf(wallet.address);
+    logWithTimestamp(`Balance of tokens: ${formatUnits(balance, 18)}`, chalk.blue);
+
+    if (balance > 0) {
+      const ethWorthInWei = await contract.getTokenSellQuote(balance);
+      const ethWorth = formatEther(ethWorthInWei);
+      logWithTimestamp(`Worth of all tokens in ETH: ${ethWorth}`, chalk.green);
+      return ethWorth;
+    } else {
+      logWithTimestamp(`No tokens to calculate worth`, chalk.yellow);
+      return 0;
+    }
+  } catch (error) {
+    logWithTimestamp(`Error calculating token worth: ${error}`, chalk.red);
+    return 0;
   }
 }
 
