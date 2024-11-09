@@ -11,8 +11,9 @@ import { executeBuy, executeSell, getBalanceAndSellAll } from "./trading.js";
 import { getTokenWorthInEth } from "./tokenInfo.js";
 
 const argv = yargs(process.argv)
-  .positional("operation", {
+  .option("operation", {
     describe: "The operation to perform",
+    alias: "o",
     choices: ["buy", "sell", "sell-all", "info"],
     default: "info",
   })

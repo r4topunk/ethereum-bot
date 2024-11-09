@@ -61,7 +61,7 @@ export async function getTokenWorthInEth(contract, totalSpentMap) {
       // Decode the transaction data to get the function name
       const iface = new Interface(contract.interface.fragments);
       const parsedTransaction = iface.parseTransaction({ data: lastTransaction.data });
-      console.log(formatUnits(parsedTransaction.args[0], 18));
+      // console.log(formatUnits(parsedTransaction.args[0], 18));
       const functionName = parsedTransaction.name;
       logWithTimestamp(`Lastx   [${functionName.toUpperCase()}] ${lastTransactionDate}`, chalk.black, false);
     }
