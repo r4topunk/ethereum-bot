@@ -67,10 +67,14 @@ function generateTokenLinks(tokenName, tokenAddress) {
     "DexScreen",
     `https://dexscreener.com/base/${tokenAddress}`
   );
+  const uniswap = terminalLink(
+    "Uniswap",
+    `https://app.uniswap.org/explore/tokens/base/${tokenAddress}`
+  );
 
   return terminalLink.isSupported
-    ? `${tokenName} => ${baseLink} | ${wowLink} | ${dexScreen}`
-    : `${tokenName}\n` + chalk.blue(`${baseLink}\n${wowLink}\n${dexScreen}`);
+    ? `${tokenName} => ${baseLink} | ${wowLink} | ${dexScreen} | ${uniswap}`
+    : `${tokenName}\n` + chalk.blue(`${baseLink}\n${wowLink}\n${dexScreen}\n${uniswap}`);
 }
 
 async function getTokenBalance(tokenContract) {
