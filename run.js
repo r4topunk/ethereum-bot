@@ -4,11 +4,11 @@ import { ethers } from "ethers";
 import yargs from "yargs";
 import { BUY_VALUE, DEFAULT_CONTRACTS } from "./constants.js";
 import { jsonAbi } from "./erc20-abi.js";
-import { lineBreak, logWithTimestamp } from "./utils.js";
-import { wallet } from "./wallet.js";
 import { getTotalSpentForContracts } from "./spending.js";
-import { executeBuy, executeSell, getBalanceAndSellAll } from "./trading.js";
 import { getTokenWorthInEth } from "./tokenInfo.js";
+import { executeBuy, executeSell, getBalanceAndSellAll } from "./trading.js";
+import { lineBreak, logColor } from "./utils.js";
+import { wallet } from "./wallet.js";
 
 const argv = yargs(process.argv)
   .option("operation", {
@@ -60,7 +60,7 @@ const operation = argv?.operation;
       await executeSell(contract, balance);
     } else if (operation === "sell-all") {
       if (contracts.length > 1) {
-        logWithTimestamp(
+        logColor(
           "Cannot sell all tokens for multiple contracts",
           chalk.red
         );

@@ -1,4 +1,4 @@
-import { logWithTimestamp, getEthZeros } from "./utils.js";
+import { logColor, getEthZeros } from "./utils.js";
 import { provider } from "./provider.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
@@ -13,32 +13,32 @@ export async function getTokenWorthInEth(tokenContract, totalSpentMap) {
     const tokenAddress = await tokenContract.getAddress();
 
     const links = generateTokenLinks(tokenName, tokenAddress);
-    logWithTimestamp(links, chalk.magenta, false);
-    logWithTimestamp(`Address ${tokenAddress}`, chalk.black, false);
+    logColor(links, chalk.magenta, false);
+    logColor(`Address ${tokenAddress}`, chalk.black, false);
 
     const tokenBalance = await getTokenBalance(tokenContract);
-    logWithTimestamp(`Balance ${formatTokenBalance(tokenBalance)}`, chalk.black, false);
+    logColor(`Balance ${formatTokenBalance(tokenBalance)}`, chalk.black, false);
 
     const marketType = await getMarketType(tokenContract);
-    logWithTimestamp(`Type    ${marketType}`, chalk.black, false);
+    logColor(`Type    ${marketType}`, chalk.black, false);
 
     const lastTransactionDate = await getLastTransactionDate(tokenAddress);
     if (marketType === "BONDING_CURVE") {
       const lastFunctionName = await getLastTransactionFunctionName(tokenContract, tokenAddress);
-      logWithTimestamp(`Lastx   [${lastFunctionName}] ${lastTransactionDate}`, chalk.black, false);
+      logColor(`Lastx   [${lastFunctionName}] ${lastTransactionDate}`, chalk.black, false);
     }
 
     const totalSpentWei = totalSpentMap[tokenAddress] || toBigInt(0);
     const formattedSpent = formatEthValue(totalSpentWei);
-    logWithTimestamp(`Spent   ${formattedSpent}`, chalk.black, false);
+    logColor(`Spent   ${formattedSpent}`, chalk.black, false);
 
     if (tokenBalance > 0) {
       const tokenWorthInWei = await calculateTokenWorth(tokenContract, tokenBalance, marketType);
       const formattedWorth = formatEthValue(tokenWorthInWei);
-      logWithTimestamp(`Worth   ${formattedWorth}`, chalk.black, false);
+      logColor(`Worth   ${formattedWorth}`, chalk.black, false);
 
       const percentageDifference = calculateDifferencePercentage(tokenWorthInWei, totalSpentWei);
-      logWithTimestamp(
+      logColor(
         `Diff    ${percentageDifference}%`,
         percentageDifference > 0 ? chalk.green : chalk.red,
         false
@@ -46,11 +46,11 @@ export async function getTokenWorthInEth(tokenContract, totalSpentMap) {
 
       return { ethWorth: formatEther(tokenWorthInWei), percentage: percentageDifference, balance: tokenBalance };
     } else {
-      logWithTimestamp(`No tokens to calculate worth`, chalk.yellow, false);
+      logColor(`No tokens to calculate worth`, chalk.yellow, false);
       return 0;
     }
   } catch (error) {
-    logWithTimestamp(`Error calculating token worth: ${error}`, chalk.red, false);
+    logColor(`Error calculating token worth: ${error}`, chalk.red, false);
     return 0;
   }
 }

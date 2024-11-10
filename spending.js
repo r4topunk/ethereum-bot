@@ -1,5 +1,5 @@
 
-import { logWithTimestamp } from "./utils.js";
+import { logColor } from "./utils.js";
 import { provider } from "./provider.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
@@ -36,7 +36,7 @@ export async function getTotalSpent(contractAddress) {
 
     return totalSpent; // return totalSpent in Wei
   } catch (error) {
-    logWithTimestamp(`Error fetching total spent: ${error}`, chalk.red);
+    logColor(`Error fetching total spent: ${error}`, chalk.red);
     return 0;
   }
 }
@@ -79,7 +79,7 @@ export async function getTotalSpentForContracts(contractAddresses) {
 
     return totalSpentMap;
   } catch (error) {
-    logWithTimestamp(`Error fetching total spent: ${error}`, chalk.red);
+    logColor(`Error fetching total spent: ${error}`, chalk.red);
     return {};
   }
 }

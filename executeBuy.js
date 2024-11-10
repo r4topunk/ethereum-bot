@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { formatEther, formatUnits, id, toBigInt, zeroPadValue } from "ethers";
 import terminalLink from "terminal-link";
 import { provider } from "./provider.js";
-import { getEthZeros, logWithTimestamp } from "./utils.js";
+import { getEthZeros, logColor } from "./utils.js";
 import { wallet } from "./wallet.js";
 // ...existing imports...
 
