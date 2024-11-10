@@ -5,6 +5,7 @@ import chalk from "chalk";
 import { formatEther, formatUnits, id, Interface, toBigInt } from "ethers";
 import { UNISWAP_V3_POOL_ABI } from "./uniswap-v3-abi.js";
 import terminalLink from "terminal-link";
+import { Contract } from "ethers";
 
 export async function getTokenWorthInEth(tokenContract, totalSpentMap) {
   try {
@@ -154,7 +155,6 @@ export async function getTokenPrice(tokenContract) {
 
 export async function getTokenPriceUniswap(uniswapPoolAddress) {
   const uniswapPoolContract = new Contract(
-    // "0xBd74Fbaf6E9d2B08EB938981EFF601BD61CFAE8E",
     uniswapPoolAddress,
     UNISWAP_V3_POOL_ABI,
     provider
