@@ -2,19 +2,19 @@ import { Contract, formatEther, id } from "ethers";
 import {
   BUY_VALUE,
   CONTRACT_ADDRESS,
-  HIDE_ZERO_DEPLOY,
   MIN_ETH_VALUE,
-  SHOULD_BUY,
+  SHOULD_BUY
 } from "./constants.js";
 import { jsonAbi } from "./erc20-abi.js";
 // import { executeBuy } from "./executeBuy.js";
+import chalk from "chalk";
+import { AbiCoder } from "ethers";
+import terminalLink from "terminal-link";
+import { createTable, execute, openDb } from "./database.js";
 import { provider } from "./provider.js";
+import { executeBuy } from "./trading.js";
 import { logColor } from "./utils.js";
 import { wallet } from "./wallet.js";
-import chalk from "chalk";
-import terminalLink from "terminal-link";
-import { executeBuy } from "./trading.js";
-import { openDb, createTable, execute } from "./database.js";
 
 // Initialize the database and create the table
 (async () => {
@@ -22,7 +22,7 @@ import { openDb, createTable, execute } from "./database.js";
 })();
 
 provider.on("block", async (blockNumber) => {
-  // logWithTimestamp(`[${blockNumber}] New block detected`, chalk.cyan);
+  // logColor(`[${blockNumber}] New block detected`, chalk.cyan);
   const block = await provider.getBlock(blockNumber, true);
 
   for (const tx of block.prefetchedTransactions) {
@@ -35,17 +35,26 @@ provider.on("block", async (blockNumber) => {
       const txAmount = tx.value;
       const formattedAmount = formatEther(txAmount);
 
+      const receipt = await provider.getTransactionReceipt(tx.hash);
+      const transferEvent = receipt.logs.find(
+        (log) => log.topics[0] === id("Transfer(address,address,uint256)")
+      );
+      if (!transferEvent) {
+        continue;
+      }
+
+      const tokenAddress = transferEvent.address;
+
       let logMessage = `[${blockNumber}] [${Number(formattedAmount).toFixed(
         8
-      )} ETH] [${tx.hash}]`;
+      )} ETH] [${tokenAddress}]`;
 
       if (txAmount !== 0n) {
         const db = await openDb();
-        await execute(db, 
-          `INSERT INTO transactions (blockNumber, txAmount, txHash) VALUES (?, ?, ?)`,
-          [blockNumber,
-          formattedAmount,
-          tx.hash]
+        await execute(
+          db,
+          `INSERT INTO transactions (blockNumber, txAmount, txHash, tokenAddress) VALUES (?, ?, ?, ?)`,
+          [blockNumber, formattedAmount, tx.hash, tokenAddress]
         );
       }
 
@@ -54,21 +63,14 @@ provider.on("block", async (blockNumber) => {
         continue;
       }
 
-      const receipt = await provider.getTransactionReceipt(tx.hash);
-      const transferEvent = receipt.logs.find(
-        (log) => log.topics[0] === id("Transfer(address,address,uint256)")
-      );
+      logColor(logMessage, chalk.green, true);
 
-      if (transferEvent) {
-        logColor(logMessage, chalk.green, true);
-        const tokenAddress = transferEvent.address;
-        if (SHOULD_BUY) {
-          const tokenContract = new Contract(tokenAddress, jsonAbi, wallet);
-          try {
-            await executeBuy(tokenContract, BUY_VALUE);
-          } catch (error) {
-            logColor(`Error executing buy: ${error}\n`, chalk.yellow, true);
-          }
+      if (SHOULD_BUY) {
+        const tokenContract = new Contract(tokenAddress, jsonAbi, wallet);
+        try {
+          await executeBuy(tokenContract, BUY_VALUE);
+        } catch (error) {
+          logColor(`Error executing buy: ${error}\n`, chalk.yellow, true);
         }
       } else {
         logColor(logMessage, chalk.green, true);

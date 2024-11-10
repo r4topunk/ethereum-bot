@@ -8,14 +8,21 @@ export async function openDb() {
 
 export async function createTable() {
   const db = await openDb();
+  // await execute(db, `DROP TABLE IF EXISTS transactions`);
   await execute(db, `
     CREATE TABLE IF NOT EXISTS transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       blockNumber INTEGER,
       txAmount TEXT,
-      txHash TEXT
+      txHash TEXT,
+      tokenAddress TEXT
     )
   `);
+}
+
+export async function deleteAllTransactions() {
+  const db = await openDb();
+  await execute(db, `DELETE FROM transactions`);
 }
 
 export const execute = async (db, sql, params = []) => {
@@ -23,10 +30,8 @@ export const execute = async (db, sql, params = []) => {
     return new Promise((resolve, reject) => {
       db.run(sql, params, (err) => {
         if (err) {
-          logColor(`SQL execution error: ${err}`, chalk.redBright, false);
           reject(err);
         } else {
-          logColor(`SQL executed successfully: ${sql}`, chalk.greenBright, false);
           resolve();
         }
       });
@@ -35,10 +40,8 @@ export const execute = async (db, sql, params = []) => {
   return new Promise((resolve, reject) => {
     db.exec(sql, (err) => {
       if (err) {
-        logColor(`SQL execution error: ${err}`, chalk.redBright, false);
         reject(err);
       } else {
-        logColor(`SQL executed successfully: ${sql}`, chalk.greenBright, false);
         resolve();
       }
     });
