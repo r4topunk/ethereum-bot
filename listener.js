@@ -50,12 +50,7 @@ provider.on("block", async (blockNumber) => {
       )} ETH] [${tokenAddress}]`;
 
       if (txAmount !== 0n) {
-        const db = await openDb();
-        await execute(
-          db,
-          `INSERT INTO transactions (blockNumber, txAmount, txHash, tokenAddress) VALUES (?, ?, ?, ?)`,
-          [blockNumber, formattedAmount, tx.hash, tokenAddress]
-        );
+        await insertTransaction(blockNumber, formattedAmount, tx.hash, tokenAddress, "info");
       }
 
       if (txAmount < MIN_ETH_VALUE) {

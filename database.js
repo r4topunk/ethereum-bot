@@ -15,7 +15,8 @@ export async function createTable() {
       blockNumber INTEGER,
       txAmount TEXT,
       txHash TEXT,
-      tokenAddress TEXT
+      tokenAddress TEXT,
+      type TEXT
     )
   `);
 }
@@ -23,6 +24,15 @@ export async function createTable() {
 export async function deleteAllTransactions() {
   const db = await openDb();
   await execute(db, `DELETE FROM transactions`);
+}
+
+export async function insertTransaction(blockNumber, txAmount, txHash, tokenAddress, type) {
+  const db = await openDb();
+  await execute(
+    db,
+    `INSERT INTO transactions (blockNumber, txAmount, txHash, tokenAddress, type) VALUES (?, ?, ?, ?, ?)`,
+    [blockNumber, txAmount, txHash, tokenAddress, type]
+  );
 }
 
 export const execute = async (db, sql, params = []) => {
