@@ -2,17 +2,24 @@ import { Contract, formatEther, id } from "ethers";
 import {
   BUY_VALUE,
   CONTRACT_ADDRESS,
+  HIDE_ZERO_DEPLOY,
   MIN_ETH_VALUE,
   SHOULD_BUY,
 } from "./constants.js";
 import { jsonAbi } from "./erc20-abi.js";
 // import { executeBuy } from "./executeBuy.js";
 import { provider } from "./provider.js";
-import { logWithTimestamp } from "./utils.js";
+import { logColor } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
 import terminalLink from "terminal-link";
 import { executeBuy } from "./trading.js";
+import { openDb, createTable, execute } from "./database.js";
+
+// Initialize the database and create the table
+(async () => {
+  await createTable();
+})();
 
 provider.on("block", async (blockNumber) => {
   // logWithTimestamp(`[${blockNumber}] New block detected`, chalk.cyan);
@@ -32,8 +39,18 @@ provider.on("block", async (blockNumber) => {
         8
       )} ETH] [${tx.hash}]`;
 
+      if (txAmount !== 0n) {
+        const db = await openDb();
+        await execute(db, 
+          `INSERT INTO transactions (blockNumber, txAmount, txHash) VALUES (?, ?, ?)`,
+          [blockNumber,
+          formattedAmount,
+          tx.hash]
+        );
+      }
+
       if (txAmount < MIN_ETH_VALUE) {
-        if (txAmount !== 0n) logWithTimestamp(logMessage, chalk.red);
+        if (txAmount !== 0n) logColor(logMessage, chalk.red, true);
         continue;
       }
 
@@ -41,19 +58,20 @@ provider.on("block", async (blockNumber) => {
       const transferEvent = receipt.logs.find(
         (log) => log.topics[0] === id("Transfer(address,address,uint256)")
       );
+
       if (transferEvent) {
-        logWithTimestamp(logMessage, chalk.green);
+        logColor(logMessage, chalk.green, true);
         const tokenAddress = transferEvent.address;
         if (SHOULD_BUY) {
           const tokenContract = new Contract(tokenAddress, jsonAbi, wallet);
           try {
             await executeBuy(tokenContract, BUY_VALUE);
           } catch (error) {
-            logWithTimestamp(`Error executing buy: ${error}\n`, chalk.yellow);
+            logColor(`Error executing buy: ${error}\n`, chalk.yellow, true);
           }
         }
       } else {
-        logWithTimestamp(logMessage, chalk.green);
+        logColor(logMessage, chalk.green, true);
       }
     }
   }

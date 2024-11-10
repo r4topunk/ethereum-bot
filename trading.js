@@ -1,5 +1,5 @@
 
-import { logWithTimestamp } from "./utils.js";
+import { logColor } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
 import { provider } from "./provider.js";
@@ -21,19 +21,19 @@ export async function executeBuy(contract, valueToBuy) {
       0, // sqrtPriceLimitX96
       txParams
     );
-    logWithTimestamp(`Transaction sent: ${txResponse.hash}`, chalk.green);
+    logColor(`Transaction sent: ${txResponse.hash}`, chalk.green);
 
     const receipt = await txResponse.wait();
-    logWithTimestamp(
+    logColor(
       `Transaction confirmed in block: ${receipt.blockNumber}`,
       chalk.green
     );
-    logWithTimestamp(
+    logColor(
       `Gas paid: ${receipt.gasUsed * receipt.gasPrice}`,
       chalk.green
     );
   } catch (error) {
-    logWithTimestamp(`Error sending transaction: ${error}`, chalk.red);
+    logColor(`Error sending transaction: ${error}`, chalk.red);
   }
 }
 
@@ -48,34 +48,34 @@ export async function executeSell(contract, tokensToSell) {
       tokensToSell, // minPayoutSize
       0 // sqrtPriceLimitX96
     );
-    logWithTimestamp(`Transaction sent: ${txResponse.hash}`, chalk.green);
+    logColor(`Transaction sent: ${txResponse.hash}`, chalk.green);
 
     const receipt = await txResponse.wait();
-    logWithTimestamp(
+    logColor(
       `Transaction confirmed in block: ${receipt.blockNumber}`,
       chalk.green
     );
-    logWithTimestamp(
+    logColor(
       `Gas paid: ${receipt.gasUsed * receipt.gasPrice}`,
       chalk.green
     );
   } catch (error) {
-    logWithTimestamp(`Error sending transaction: ${error}`, chalk.red);
+    logColor(`Error sending transaction: ${error}`, chalk.red);
   }
 }
 
 export async function getBalanceAndSellAll(contract) {
   try {
     const balance = await contract.balanceOf(wallet.address);
-    logWithTimestamp(`Balance of tokens: ${balance.toString()}`, chalk.blue);
+    logColor(`Balance of tokens: ${balance.toString()}`, chalk.blue);
 
     if (balance > 0) {
-      logWithTimestamp(`Selling all tokens`, chalk.green);
+      logColor(`Selling all tokens`, chalk.green);
       // await executeSell(contract, balance);
     } else {
-      logWithTimestamp(`No tokens to sell`, chalk.yellow);
+      logColor(`No tokens to sell`, chalk.yellow);
     }
   } catch (error) {
-    logWithTimestamp(`Error fetching balance: ${error}`, chalk.red);
+    logColor(`Error fetching balance: ${error}`, chalk.red);
   }
 }

@@ -11,6 +11,7 @@ export const MIN_ETH_VALUE = parseEther('0.5');
 
 export const FILE_LOG_ON = true;
 export const LOG_FILE_PATH = "log.txt";
+export const HIDE_ZERO_DEPLOY = true;
 
 
 export const WALLET_PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY;

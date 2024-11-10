@@ -8,8 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./listener.js",
     "buy": "node ./executeBuy.js",
-    "op" : "node ./run.js",
-    "cinfo" : "node ./run.js -o info"
+    "op": "node ./run.js",
+    "cinfo": "node ./run.js -o info"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,7 @@
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",
     "fs": "0.0.1-security",
+    "sqlite3": "^5.1.7",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
