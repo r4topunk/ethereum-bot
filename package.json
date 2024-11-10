@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./listener.js",
     "buy": "node ./executeBuy.js",
-    "op" : "node ./run.js"
+    "op" : "node ./run.js",
+    "cinfo" : "node ./run.js -o info"
   },
   "keywords": [],
   "author": "",
