@@ -2,7 +2,7 @@ import { logColor } from "./utils.js";
 import { wallet } from "./wallet.js";
 import chalk from "chalk";
 import { provider } from "./provider.js";
-import { id, zeroPadValue, toBigInt } from "ethers";
+import { id, zeroPadValue, toBigInt, formatEther } from "ethers";
 import { openDb, execute } from "./database.js";
 
 async function insertTransaction(blockNumber, txAmount, txHash, tokenAddress, type) {
@@ -16,6 +16,7 @@ async function insertTransaction(blockNumber, txAmount, txHash, tokenAddress, ty
 
 export async function executeBuy(contract, valueToBuy) {
   try {
+    const contractAddress = await contract.getAddress();
     const txParams = {
       value: valueToBuy,
     };
@@ -42,7 +43,7 @@ export async function executeBuy(contract, valueToBuy) {
       chalk.green
     );
 
-    await insertTransaction(receipt.blockNumber, valueToBuy.toString(), txResponse.hash, contract.address, "buy");
+    await insertTransaction(receipt.blockNumber, formatEther(valueToBuy), txResponse.hash, contractAddress, "buy");
   } catch (error) {
     logColor(`Error sending transaction: ${error}`, chalk.red);
   }

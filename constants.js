@@ -6,7 +6,7 @@ dotenv.config();
 
 export const SHOULD_BUY = true;
 export const BUY_VALUE = parseEther('0.00012');
-export const MIN_ETH_VALUE = parseEther('0.5');
+export const MIN_ETH_VALUE = parseEther('0.333');
 
 
 export const FILE_LOG_ON = true;

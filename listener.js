@@ -10,7 +10,7 @@ import { jsonAbi } from "./erc20-abi.js";
 import chalk from "chalk";
 import { AbiCoder } from "ethers";
 import terminalLink from "terminal-link";
-import { createTable, execute, openDb } from "./database.js";
+import { createTable, execute, insertTransaction, openDb } from "./database.js";
 import { provider } from "./provider.js";
 import { executeBuy } from "./trading.js";
 import { logColor } from "./utils.js";
